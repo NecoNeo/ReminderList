@@ -1,7 +1,10 @@
 package com.marukonekocyan.demo.reminderlist;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -14,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.marukonekocyan.demo.reminderlist.provider.DjangoDemoProvider;
 import com.marukonekocyan.demo.reminderlist.provider.NonsenseMsg;
 
 public class MainActivity extends AppCompatActivity {
@@ -69,6 +74,17 @@ public class MainActivity extends AppCompatActivity {
             msgList.add(new NonsenseMsg("Hello", i));
         }
         Log.d("size", String.valueOf(msgList.size()));
+        new FetchDataTask().execute();
+    }
+
+
+    private class FetchDataTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.i("main", "start internet");
+            new DjangoDemoProvider().firstTest();
+            return null;
+        }
     }
 
 
