@@ -21,10 +21,15 @@ import android.widget.TextView;
 import com.marukonekocyan.demo.reminderlist.provider.DjangoDemoProvider;
 import com.marukonekocyan.demo.reminderlist.provider.NonsenseMsg;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
     private MainActivity self;
+    private RecyclerView nonsenseMsgListView;
 
     public MainActivity() {
         super();
@@ -56,24 +61,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        mTextMessage = findViewById(R.id.message);
+        BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        RecyclerView nonsenseMsgList = findViewById(R.id.nonsense_msg_list);
-        nonsenseMsgList.setLayoutManager(new LinearLayoutManager(this));
+        nonsenseMsgListView = findViewById(R.id.nonsense_msg_list);
+        nonsenseMsgListView.setLayoutManager(new LinearLayoutManager(this));
 
-        List<NonsenseMsg> msgList = new ArrayList<NonsenseMsg>();
-        generateMockData(msgList);
-        NonsenseMsgAdapter adapter = new NonsenseMsgAdapter(msgList);
-        nonsenseMsgList.setAdapter(adapter);
+        loadNonsenseMsgList();
     }
 
-    private void generateMockData(List<NonsenseMsg> msgList) {
-        for (int i = 0; i < 30; i++) {
-            msgList.add(new NonsenseMsg("Hello", i));
-        }
-        Log.d("size", String.valueOf(msgList.size()));
+//    private void generateMockData(List<NonsenseMsg> msgList) {
+//        for (int i = 0; i < 30; i++) {
+//            msgList.add(new NonsenseMsg("Hello", i));
+//        }
+//        Log.d("size", String.valueOf(msgList.size()));
+//    }
+
+    private void loadNonsenseMsgList() {
         new FetchDataTask().execute();
     }
 
@@ -82,7 +87,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             Log.i("main", "start internet");
-            new DjangoDemoProvider().firstTest();
+            JSONArray result = new DjangoDemoProvider().firstTest();
+            List<NonsenseMsg> msgList = new ArrayList<>();
+            try {
+                for (int i = 0; i < result.length(); i++) {
+                    JSONObject msg = result.getJSONObject(i);
+                    msgList.add(new NonsenseMsg(msg.get("msg").toString(), 0.0));
+                }
+            } catch (JSONException jsonErr) {
+                Log.e("main", "JSON parse error");
+            }
+            NonsenseMsgAdapter adapter = new NonsenseMsgAdapter(msgList);
+            nonsenseMsgListView.setAdapter(adapter);
             return null;
         }
     }
